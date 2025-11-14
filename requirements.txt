@@ -1,0 +1,13 @@
+pandas
+requests
+beautifulsoup4
+lxml
+
+transformers
+torch
+sentencepiece
+
+openai
+
+tqdm
+python-dateutil
