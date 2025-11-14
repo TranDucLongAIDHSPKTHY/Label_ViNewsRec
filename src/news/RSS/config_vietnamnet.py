@@ -4,18 +4,18 @@
 BASE_URL = "https://vietnamnet.vn"
 
 CATEGORIES = {
-    # "chinh-tri": "Chính trị",
+    "chinh-tri": "Chính trị",
     "thoi-su": "Thời sự",
-    # "kinh-doanh": "Kinh doanh",
-    # "dan-toc-ton-giao": "Dân tộc và Tôn giáo",
-    # "the-thao": "Thể thao",
-    # "giao-duc": "Giáo dục",
-    # "the-gioi": "Thế giới",
-    # "đoi-song": "Đời sống",
-    # "van-hoa-giai-tri": "Văn hóa - Giải trí",
-    # "suc-khoe": "Sức khỏe",
-    # "cong-nghe": "Công nghệ",
-    # "phap-luat": "Pháp luật",
+    "kinh-doanh": "Kinh doanh",
+    "dan-toc-ton-giao": "Dân tộc và Tôn giáo",
+    "the-thao": "Thể thao",
+    "giao-duc": "Giáo dục",
+    "the-gioi": "Thế giới",
+    "đoi-song": "Đời sống",
+    "van-hoa-giai-tri": "Văn hóa - Giải trí",
+    "suc-khoe": "Sức khỏe",
+    "cong-nghe": "Công nghệ",
+    "phap-luat": "Pháp luật",
 }
 
 HEADERS = {

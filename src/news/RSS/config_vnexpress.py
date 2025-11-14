@@ -5,17 +5,17 @@ BASE_URL = "https://vnexpress.net"
 
 CATEGORIES = {
     "thoi-su": "Thời sự",
-    # "the-gioi": "Thế giới",
-    # "kinh-doanh": "Kinh doanh",
-    # "bat-dong-san": "Bất động sản",
-    # "khoa-hoc-cong-nghe": "Khoa học công nghệ",
-    # "suc-khoe": "Sức khỏe",
-    # "giai-tri": "Giải trí",
-    # "the-thao": "Thể thao",
-    # "phap-luat": "Pháp luật",
-    # "du-lich": "Du lịch",
-    # "giao-duc": "Giáo dục",
-    # "oto-xe-may": "Xe",
+    "the-gioi": "Thế giới",
+    "kinh-doanh": "Kinh doanh",
+    "bat-dong-san": "Bất động sản",
+    "khoa-hoc-cong-nghe": "Khoa học công nghệ",
+    "suc-khoe": "Sức khỏe",
+    "giai-tri": "Giải trí",
+    "the-thao": "Thể thao",
+    "phap-luat": "Pháp luật",
+    "du-lich": "Du lịch",
+    "giao-duc": "Giáo dục",
+    "oto-xe-may": "Xe",
 }
 
 HEADERS = {

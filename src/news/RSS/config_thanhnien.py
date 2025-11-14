@@ -4,22 +4,22 @@
 BASE_URL = "https://thanhnien.vn"
 
 CATEGORIES = {
-    # "chinh-tri.htm": "Chính trị",
+    "chinh-tri.htm": "Chính trị",
     "thoi-su.htm": "Thời sự",
-    # "the-gioi.htm": "Thế giới",
-    # "doi-song.htm": "Đời sống",
-    # "kinh-te.htm": "Kinh tế",
-    # "gioi-tre.htm": "Giới trẻ",
-    # "the-thao.htm": "Thể thao",
-    # "giai-tri.htm": "Giải trí",
-    # "suc-khoe.htm": "Sức khỏe",
-    # "giao-duc.htm": "Giáo dục",
-    # "du-lich.htm": "Du lịch",
-    # "van-hoa.htm": "Văn hóa",
-    # "xe.htm": "Xe",
-    # "cong-nghe.htm": "Công nghệ",
-    # "tieu-dung-thong-minh.htm": "Tiêu dùng",
-    # "thoi-trang-tre.htm": "Thời trang trẻ",
+    "the-gioi.htm": "Thế giới",
+    "doi-song.htm": "Đời sống",
+    "kinh-te.htm": "Kinh tế",
+    "gioi-tre.htm": "Giới trẻ",
+    "the-thao.htm": "Thể thao",
+    "giai-tri.htm": "Giải trí",
+    "suc-khoe.htm": "Sức khỏe",
+    "giao-duc.htm": "Giáo dục",
+    "du-lich.htm": "Du lịch",
+    "van-hoa.htm": "Văn hóa",
+    "xe.htm": "Xe",
+    "cong-nghe.htm": "Công nghệ",
+    "tieu-dung-thong-minh.htm": "Tiêu dùng",
+    "thoi-trang-tre.htm": "Thời trang trẻ",
 }
 
 HEADERS = {

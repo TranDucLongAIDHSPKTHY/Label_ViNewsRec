@@ -5,17 +5,17 @@ BASE_URL = "https://tuoitre.vn"
 
 CATEGORIES = {
     "thoi-su.htm": "Thời sự",
-    # "the-gioi.htm": "Thế giới",
-    # "phap-luat.htm": "Pháp luật",
-    # "kinh-doanh.htm": "Kinh doanh",
-    # "cong-nghe.htm": "Công nghệ",
-    # "xe.htm": "Xe",
-    # "nhip-song-tre.htm": "Nhịp sống trẻ",
-    # "van-hoa.htm": "Văn hóa",
-    # "giai-tri.htm": "Giải trí",
-    # "the-thao.htm": "Thể thao",
-    # "giao-duc.htm": "Giáo dục",
-    # "suc-khoe.htm": "Sức khỏe",
+    "the-gioi.htm": "Thế giới",
+    "phap-luat.htm": "Pháp luật",
+    "kinh-doanh.htm": "Kinh doanh",
+    "cong-nghe.htm": "Công nghệ",
+    "xe.htm": "Xe",
+    "nhip-song-tre.htm": "Nhịp sống trẻ",
+    "van-hoa.htm": "Văn hóa",
+    "giai-tri.htm": "Giải trí",
+    "the-thao.htm": "Thể thao",
+    "giao-duc.htm": "Giáo dục",
+    "suc-khoe.htm": "Sức khỏe",
 }
 
 HEADERS = {

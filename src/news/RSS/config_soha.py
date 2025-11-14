@@ -5,17 +5,17 @@ BASE_URL = "https://soha.vn"
 
 CATEGORIES = {
     "thoi-su-xa-hoi.htm": "Thời sự - Xã hội",
-    # "kinh-doanh.htm": "Kinh doanh",
-    # "bat-dong-san.htm": "Bất động sản",
-    # "giai-tri.htm": "Giải trí",
-    # "the-thao.htm": "Thể thao",
-    # "nhip-song-moi.htm": "Nhịp sống mới",
-    # "phap-luat.htm": "Pháp luật",
-    # "song-khoe.htm": "Sống khỏe",
-    # "cong-nghe.htm": "Công nghệ",
-    # "xe.htm": "Xe",
-    # "doi-song.htm": "Đời sống",
-    # "song-xanh.htm": "Sống xanh",
+    "kinh-doanh.htm": "Kinh doanh",
+    "bat-dong-san.htm": "Bất động sản",
+    "giai-tri.htm": "Giải trí",
+    "the-thao.htm": "Thể thao",
+    "nhip-song-moi.htm": "Nhịp sống mới",
+    "phap-luat.htm": "Pháp luật",
+    "song-khoe.htm": "Sống khỏe",
+    "cong-nghe.htm": "Công nghệ",
+    "xe.htm": "Xe",
+    "doi-song.htm": "Đời sống",
+    "song-xanh.htm": "Sống xanh",
 }
 
 HEADERS = {

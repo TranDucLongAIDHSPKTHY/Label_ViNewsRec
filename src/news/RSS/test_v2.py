@@ -1,6 +1,5 @@
 # File: test_v3.py
 # CẢI TIẾN V13_V4: CRAWL TRUY VẾT TOÀN BỘ CÁC TRANG TRONG MỖI CATEGORY (không giới hạn trang)
-
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -15,7 +14,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.common.exceptions import TimeoutException
 import pickle
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
@@ -38,7 +37,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("logs/crawl_all_rss_v13_v4.log", encoding="utf-8"),
+        logging.FileHandler("logs/crawl_all_rss_v14_v5.log", encoding="utf-8"),
         logging.StreamHandler()
     ]
 )
@@ -46,18 +45,18 @@ logging.basicConfig(
 # -------------------------- SESSION & RETRY --------------------------
 session = requests.Session()
 
-def safe_get(url, headers, retries=4, backoff=3):
+def safe_get(url, headers, retries=6, backoff=5, timeout=60):
     for i in range(retries):
         try:
-            resp = session.get(url, headers=headers, timeout=500)
+            resp = session.get(url, headers=headers, timeout=timeout)
             if resp.status_code == 200:
                 return resp
-            if resp.status_code in (403, 429):
+            if resp.status_code in (403, 429, 503):
                 headers['User-Agent'] = get_random_user_agent()
-                time.sleep(backoff * (i + 1))
+                time.sleep(backoff * (2 ** i))
         except Exception as e:
             logging.warning(f"Retry {i+1}/{retries} GET {url} - {e}")
-            time.sleep(backoff * (i + 1))
+            time.sleep(backoff * (2 ** i))
     return None
 
 def get_random_user_agent():
@@ -69,9 +68,6 @@ def get_random_user_agent():
     ]
     return random.choice(ua_list)
 
-# -------------------------- PROXY (optional) --------------------------
-proxy_list = []   # Thêm proxy nếu cần
-
 # -------------------------- SELENIUM --------------------------
 def get_selenium_driver(headers=None):
     options = Options()
@@ -81,29 +77,29 @@ def get_selenium_driver(headers=None):
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--disable-plugins")
+
+    ua = headers.get('User-Agent') if headers else get_random_user_agent()
+    options.add_argument(f"--user-agent={ua}")
+
+    prefs = {
+        "profile.managed_default_content_settings.images": 2,
+        "profile.default_content_setting_values.notifications": 2,
+    }
+    options.add_experimental_option("prefs", prefs)
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
 
-    ua = headers.get('User-Agent') if headers else get_random_user_agent()
-    options.add_argument(f"user-agent={ua}")
-
-    prefs = {"profile.managed_default_content_settings.images": 2,
-             "profile.default_content_setting_values.notifications": 2}
-    options.add_experimental_option("prefs", prefs)
-
-    if proxy_list:
-        proxy = random.choice(proxy_list)
-        options.add_argument(f"--proxy-server={proxy}")
-
     try:
         driver = webdriver.Chrome(options=options)
-        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
         return driver
-    except WebDriverException as e:
+    except Exception as e:
         logging.error(f"ChromeDriver init error: {e}")
         return None
 
-def safe_get_selenium(url, headers=None, timeout=500, retries=3):
+def safe_get_selenium(url, headers=None, timeout=120, retries=2):
     for attempt in range(retries):
         driver = get_selenium_driver(headers)
         if not driver:
@@ -112,26 +108,8 @@ def safe_get_selenium(url, headers=None, timeout=500, retries=3):
         try:
             driver.set_page_load_timeout(timeout)
             driver.get(url)
-
-            WebDriverWait(driver, 120).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-
-            list_wait_selector = {
-                "dantri": "div.article-list, ul.list-news, section.list",
-                "thanhnien": "div.story-list, ul.list-news, section.list",
-            }.get(url.split("/")[2].split(".")[0], "article, .story, .item-news")
-            try:
-                WebDriverWait(driver, 60).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, list_wait_selector))
-                )
-            except TimeoutException:
-                logging.warning(f"List container timeout for {url}")
-
-            for _ in range(3):
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
-                time.sleep(2)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
-
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            time.sleep(8)  # Đợi JS load nội dung
             page_source = driver.page_source
             class MockResp:
                 text = page_source
@@ -139,13 +117,12 @@ def safe_get_selenium(url, headers=None, timeout=500, retries=3):
             return MockResp()
         except Exception as e:
             logging.error(f"Selenium attempt {attempt+1}/{retries} error {url}: {e}")
-            if driver:
-                driver.save_screenshot(f"logs/selenium_error_{attempt}.png")
-                with open(f"logs/selenium_error_{attempt}.html", "w", encoding="utf-8") as f:
-                    f.write(driver.page_source)
         finally:
-            driver.quit()
-        time.sleep(15 * (attempt + 1))
+            try:
+                driver.quit()
+            except:
+                pass
+        time.sleep(15)
     return None
 
 # -------------------------- TEXT CLEAN --------------------------
@@ -170,8 +147,13 @@ def is_valid_url(link, source):
     if any(k in lower for k in exclude):
         return False
 
-    id_pattern = r'\d{7,}'
-    if not re.search(id_pattern, link):
+    id_patterns = {
+        "vietnamnet": r'\d{6,}',
+        "twentyfourh": r'\d{6,}',
+        "default": r'\d{7,}'
+    }
+    pattern = id_patterns.get(source, id_patterns["default"])
+    if not re.search(pattern, link):
         return False
 
     domain_map = {
@@ -204,22 +186,20 @@ def extract_date(raw, source):
     iso = re.search(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', raw)
     if iso:
         return iso.group(0)[:10]
-
     patterns = [r'(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})', r'(\d{4}-\d{2}-\d{2})']
     for p in patterns:
         m = re.search(p, raw)
         if m:
             d = m.group(1)
-            if '/' in d or '-' in d:
-                parts = re.split(r'[/\-]', d)
-                if len(parts) == 3:
-                    if len(parts[0]) == 4:
-                        return d
-                    else:
-                        return f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
+            parts = re.split(r'[/\-]', d)
+            if len(parts) == 3:
+                if len(parts[0]) == 4:
+                    return d
+                else:
+                    return f"{parts[2]}-{parts[1].zfill(2)}-{parts[0].zfill(2)}"
     return ""
 
-# -------------------------- DETAIL SELECTORS --------------------------
+# -------------------------- DETAIL SELECTORS (CẬP NHẬT VIETNAMNET) --------------------------
 DETAIL_SELECTORS = {
     "vnexpress": {
         'title': ["h1.title-detail", "h1.title-news"],
@@ -278,12 +258,12 @@ DETAIL_SELECTORS = {
         'unwanted': ["figure", "script", "style", ".ads", ".related"]
     },
     "vietnamnet": {
-        'title': ["h1"],
-        'abstract': [".lead", "p.lead"],
-        'content_div': [".content"],
-        'content': ["p"],
-        'date': [".date"],
-        'unwanted': ["figure", "script", "style", ".ads", ".sidebar"]
+        'title': ["h1.title-detail", "h1", ".title"],
+        'abstract': [".bold", ".lead", "p.lead", ".content-sapo"],
+        'content_div': [".maincontent", ".content-detail", ".ArticleContent", ".content"],
+        'content': ["p", "div p"],
+        'date': [".date", "time", "meta[property='article:published_time']"],
+        'unwanted': ["figure", "script", "style", ".ads", ".sidebar", ".box-embed", ".VnnAds"]
     },
 }
 
@@ -294,29 +274,35 @@ def crawl_article_detail_generic(link, headers, selectors, source):
     if not is_valid_url(link, source):
         return "", "", "", ""
 
-    resp = safe_get(link, headers, retries=5)
-    if not resp:
-        print(" → Fallback Selenium")
-        resp = safe_get_selenium(link, headers)
+    # VIETNAMNET: BẮT BUỘC DÙNG SELENIUM
+    if source == "vietnamnet":
+        resp = safe_get_selenium(link, headers, timeout=150)
+        if not resp:
+            print(" [!] Selenium thất bại")
+            return "", "", "", ""
+    else:
+        resp = safe_get(link, headers, retries=6, timeout=60)
+        if not resp:
+            print(" → Fallback Selenium")
+            resp = safe_get_selenium(link, headers)
 
     if not resp:
-        print(" [!] Không tải được chi tiết")
         return "", "", "", ""
 
     soup = BeautifulSoup(resp.text, "lxml")
 
-    # ---- TITLE (mạnh hơn) ----
+    # TITLE
     title = ""
     for sel in selectors['title']:
         el = soup.select_one(sel)
-        if el and len(clean_text(el.get_text())) > 10:
+        if el and len(clean_text(el.get_text())) > 15:
             title = clean_text(el.get_text())
             break
     if not title:
         title_tag = soup.find("title")
         title = clean_text(title_tag.get_text()).split("|")[0].split("-")[0].strip() if title_tag else "Không tiêu đề"
 
-    # ---- CONTENT ----
+    # CONTENT
     content_parts = []
     for div_sel in selectors['content_div']:
         div = soup.select_one(div_sel)
@@ -327,24 +313,24 @@ def crawl_article_detail_generic(link, headers, selectors, source):
             for p_sel in selectors['content']:
                 for p in div.select(p_sel):
                     txt = clean_text(p.get_text())
-                    if 50 <= len(txt) <= 2000 and not any(k in txt.lower() for k in
-                                                          ["xem thêm", "đọc thêm", "quảng cáo", "bình luận", "đăng nhập"]):
+                    if 50 <= len(txt) <= 2500 and not any(k in txt.lower() for k in
+                                                          ["xem thêm", "đọc thêm", "quảng cáo", "bình luận", "đăng nhập", "mailisa"]):
                         content_parts.append(txt)
             if content_parts:
                 break
 
-    if len(content_parts) < 3:
+    if len(content_parts) < 2:
         for p in soup.find_all('p'):
             txt = clean_text(p.get_text())
-            if 80 <= len(txt) <= 1500 and not any(k in txt.lower() for k in
-                                                  ["quảng cáo", "menu", "footer", "đăng nhập"]):
+            if 80 <= len(txt) <= 2000 and not any(k in txt.lower() for k in
+                                                  ["quảng cáo", "menu", "footer", "đăng nhập", "mailisa"]):
                 content_parts.append(txt)
-                if len(content_parts) >= 10:
+                if len(content_parts) >= 8:
                     break
 
     content = " ".join(content_parts)
 
-    # ---- ABSTRACT ----
+    # ABSTRACT
     abstract = ""
     if content_parts:
         for para in content_parts:
@@ -359,10 +345,9 @@ def crawl_article_detail_generic(link, headers, selectors, source):
                 if len(abstract) > 50:
                     break
 
-    # ---- DATE ----
+    # DATE
     date = ""
-    for meta_sel in ["meta[property='article:published_time']", "meta[name='pubdate']",
-                     "meta[itemprop='datePublished']"]:
+    for meta_sel in ["meta[property='article:published_time']", "meta[name='pubdate']", "meta[itemprop='datePublished']"]:
         m = soup.select_one(meta_sel)
         if m and m.get("content"):
             date = extract_date(m["content"], source)
@@ -377,9 +362,11 @@ def crawl_article_detail_generic(link, headers, selectors, source):
                 if date:
                     break
     if not date:
-        m = re.search(r'/(\d{4})/(\d{2})/(\d{2})/', link) or re.search(r'(\d{4})(\d{2})(\d{2})', link)
-        if m and len(m.groups()) == 3:
-            date = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        m = re.search(r'/(\d{4})/(\d{2})/(\d{2})/', link) or re.search(r'-(\d{7,})\.html', link)
+        if m and len(m.groups()) >= 1:
+            num = m.group(1) if len(m.groups()) == 1 else f"{m.group(1)}{m.group(2)}{m.group(3)}"
+            if len(num) >= 7:
+                date = f"20{num[-7:-5]}-{num[-5:-3]}-{num[-3:-1]}"
     if not date and len(content) > 300:
         date = datetime.now().strftime("%Y-%m-%d")
 
@@ -406,6 +393,17 @@ LIST_SELECTORS = {
 }
 
 # -------------------------- PAGE FORMAT --------------------------
+LIST_SELECTORS = {
+    "vnexpress": "article.item-news a, article.item-news h2 a, article.item-news h3 a",
+    "tuoitre": "li.news-item h3 a, a[href*='.htm'], h3.title-news a",
+    "soha": "h3 a, a[href*='.htm'], a[href*='.html'], .title a",
+    "dantri": "article.article-item h3 a, .dt-news__title a, h3 a, a[href*='.htm'], a[href*='.html']",
+    "zingnews": "article.article-item h3 a, .article-title a, h1 a, h2 a, a[href*='.html']",
+    "twentyfourh": "h3 a, .title a, a[href*='.html'], h2 a",
+    "thanhnien": ".story__title a, .story a, h3 a, h2 a, a[href*='.htm'], a[href*='.html']",
+    "vietnamnet": "h3 a, .VnnTitle a, .title-news a, a[href*='.html']",
+}
+
 PAGE_FORMATS = {
     "vnexpress": lambda b, c, p: f"{b}/{c}-p{p}",
     "tuoitre": lambda b, c, p: f"{b}/{c.replace('.htm','')}/trang-{p}.htm",
@@ -446,11 +444,7 @@ def crawl_category_generic(base_url, cat_slug, cat_name, headers, list_selector,
 
         # Fallback selector nếu không tìm thấy
         if len(items) < 5:
-            fallback = [
-                "a[href*='.html']", "a[href*='.htm']",
-                "h1 a", "h2 a", "h3 a", "h4 a",
-                ".title a", ".story a", ".article-title a"
-            ]
+            fallback = ["a[href*='.html']", "h3 a", ".title a"]
             for fb in fallback:
                 cand = soup.select(fb)
                 if len(cand) >= 5:

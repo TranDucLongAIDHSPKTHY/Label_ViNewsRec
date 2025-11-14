@@ -5,14 +5,14 @@ BASE_URL = "https://www.24h.com.vn"
 
 CATEGORIES = {
     "tin-tuc-trong-ngay-c46.html": "Tin tức trong ngày",
-    # "bong-da-c48.html": "Bóng đá",
-    # "kinh-doanh-c161.html": "Kinh doanh",
-    # "giai-tri-c731.html": "Giải trí",
-    # "suc-khoe-doi-song-c62.html": "Sức khỏe",
-    # "thoi-trang-hi-tech-c407.html": "Hi-Tech",
-    # "tin-tuc-quoc-te-c415.html": "Thế giới",
-    # "the-thao-c101.html": "Thể thao",
-    # "o-to-c747.html": "Ô tô",
+    "bong-da-c48.html": "Bóng đá",
+    "kinh-doanh-c161.html": "Kinh doanh",
+    "giai-tri-c731.html": "Giải trí",
+    "suc-khoe-doi-song-c62.html": "Sức khỏe",
+    "thoi-trang-hi-tech-c407.html": "Hi-Tech",
+    "tin-tuc-quoc-te-c415.html": "Thế giới",
+    "the-thao-c101.html": "Thể thao",
+    "o-to-c747.html": "Ô tô",
 
 }
 
