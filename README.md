@@ -8,30 +8,6 @@ Dự án xây dựng bộ dữ liệu tin tức tiếng Việt theo chuẩn **MI
 
 ---
 
-## Cấu trúc thư mục
-ViNewsRec/
-│
-├── data/
-│   ├── vnexpress_news_full.csv          # Dữ liệu gốc sau crawl
-│   ├── vnexpress_news_labeled.csv       # Có thêm title_entities, abstract_entities
-│   ├── vnexpress_for_labeling.json      # Import vào Label Studio
-│   ├── behaviors.tsv                    # Hành vi người dùng (MIND format)
-│   └── news.tsv                         # Thông tin bài báo (MIND format)
-│
-├── src/
-│   ├── crawl_vnexpress.py               # Thu thập bài báo
-│   ├── auto_ner.py                      # Tự động gắn nhãn NER
-│   ├── label_studio.py                  # Chuyển CSV → JSON cho Label Studio
-│   └── user_behavior_synthetic_llm.py   # Tạo hành vi người dùng bằng GPT
-│
-├── logs/
-│   └── vnexpress_crawl.log              # Log quá trình crawl
-│
-├── requirements.txt
-└── README.md
-
----
-
 ## Pipeline xử lý
     1[Crawl VnExpress] --> 2[vnexpress_news_full.csv]
     2 --> 3[auto_ner.py]
